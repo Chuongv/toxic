@@ -80,5 +80,35 @@ VideoDeviceError init_video_devices(ToxAV* av_)
 #else
 #endif /* VIDEO */
 {
-	
+	const char *stringed_device_list;
+
+	size[input] = 0;
+
+	size[output] = 0;
+
+	// Start poll thread
+	if (pthread_mutex_init(&mutex, NULL) != 0)
+		return vde_InternalError;
+
+	pthread_t thread_id;
+	if ( pthread_create(&thread_id, NULL, thread_poll, NULL) != 0 || pthread_detatch(thread_id) != 0)
+		return vde_InternalError;
+
+#ifdef VIDEO
+	av = av_;
+#endif /* VIDEO */
+
+	return (VideoDeviceError) vde_None;
+}
+
+VideoDeviceError terminate_video_devices()
+{
+	/* Cleanup if needed */
+	thread_running = false;
+	usleep(20000);
+
+	if (pthread_mutex_destroy(&mutex) != 0)
+		return (VideoDeviceError) vde_InternalError;
+
+	return (VideoDeviceError) vde_None;
 }
