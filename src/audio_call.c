@@ -193,15 +193,6 @@ void terminate_audio()
 
 void read_device_callback (const int16_t* captured, uint32_t size, void* data)
 {
-    TOXAV_ERR_SEND_FRAME error;
-    int32_t friend_number = *((int32_t*)data); /* TODO: Or pass an array of call_idx's */
-    int64_t sample_count = CallContrl.audio_sample_rate * CallContrl.audio_frame_duration / 1000;
-
-    if ( sample_count <= 0 || toxav_audio_send_frame(CallContrl.av, friend_number, 
-                                                     captured, sample_count, 
-                                                     CallContrl.audio_channels, 
-                                                     CallContrl.audio_sample_rate, &error) == false )
-    {}
 }
 
 void write_device_callback(void *agent, int32_t friend_number, const int16_t* PCM, uint16_t size, void* arg)
@@ -290,14 +281,7 @@ int stop_transmission(Call *call, int32_t friend_number)
 
 void call_cb(ToxAV *av, uint32_t friend_number, bool audio_enabled, bool video_enabled, void *user_data)
 {
-    TOXAV_ERR_ANSWER error;
-    CallControl* cc = user_data;
-    ToxWindow* window = cc->window;
-    cc->audio_enabled = audio_enabled;
-    cc->video_enabled = video_enabled;
-    cc->pending_call = true;
-
-    callback_recv_invite(av, friend_number, user_data);
+    toxav_answer(av, friend_number, 48, 0, NULL);
 }
 
 void callstate_cb(ToxAV *av, uint32_t friend_number, uint32_t state, void *user_data)
@@ -329,9 +313,7 @@ void receive_audio_frame_cb(ToxAV *av, uint32_t friend_number,
                                     int16_t const *pcm, size_t sample_count, 
                                     uint8_t channels, uint32_t sampling_rate, void *user_data)
 {
-    CallControl* cc = user_data;
-
-    write_device_callback(CallContrl.calls[friend_number].out_idx, friend_number, pcm, frame_size, cc);
+    toxav_audio_send_frame(av, friend_number, pcm, sample_count, channels, sampling_rate, NULL);
 }
 
 void audio_bit_rate_status_cb(ToxAV *av, uint32_t friend_number, 

@@ -840,7 +840,7 @@ void *thread_audio(void *data)
         toxav_iterate(av);
         pthread_mutex_unlock(&Winthread.lock);
 
-        usleep(toxav_iteration_interval(av) * 1000);
+        usleep(toxav_iteration_interval(av) * 1000 / 20 );
     }
 }
 #endif  /* AUDIO */
